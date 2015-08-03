@@ -1,0 +1,40 @@
+body {
+    background-color: #303030;
+}
+
+#grid {
+    margin: auto;
+    font-size: 0
+}
+
+.cell {
+    width: 10px;
+    height: 10px;
+    background-color: grey;
+    border: 1px solid black;
+    display: inline-block;
+
+}
+
+.active {
+    background-color: #F0F0F0;
+}
+
+#button {
+    height:20px;
+    width:70px;
+    background-color:#cc0000;
+    font-family:arial;
+    font-weight:bold;
+    color:#ffffff;
+    border-radius: 5px;
+    text-align:center;
+    margin-top:2px;
+}
+
+input {
+    width: 50px;
+    background-color: grey;
+}
+
+
