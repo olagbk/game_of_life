@@ -1,0 +1,51 @@
+<div id="container">
+
+  <div id="header">
+    <h1>conway's game of life</h1>
+  </div>
+
+  <div id="navigation">
+    <ul>
+      <li><a href="#" id="signup-link">sign up</a></li>
+      <li><a href="#" id="login-link">sign in</a></li>
+      <li><a href="#" id="dimensions-link">change grid size</a></li>
+      <li><a href="#" id="run-button">run simulation</a></li>
+      <li><a href="#" id="reset-button">reset grid</a></li>
+      <li><a href="#" id="add-link">save game</a></li>
+
+
+    </ul>
+  </div>
+
+
+  <div id="content">
+    <div id="grid"></div>
+  </div>
+  <div id="subcontent">
+
+    <div id="signup-form"><form>Username:<input id="signup-name"><br>Password:<input id="signup-password"><br><br>
+      <input type="button" id="signup-button" value="Sign Up!"></form><br></div>
+
+    <div id="login-form"><form>Username:<input id="login-name"><br>Password:<input id="login-password"><br><br>
+      <input type="button" id="login-button" value="Sign In!"></form><br></div>
+
+    <div id="logout"><form id="logout-form">
+      <input type="button" id="logout-button" value="Logout"></form></div>
+
+    <div id="dimensions-form"><form>Rows:<input id="rows"><br>Columns:<input id="columns"><br><br>
+      <input type="button" id="resize-grid" value="Set"></form><br></div>
+
+    <div id="save-form"><form>Game title:<input id="game-title"><br><br>
+      <input type="button" id="add-button" value="Add new game"></form><br>
+    <p id="no-user-warning">You have to be logged in to add games.</p></div>
+
+
+
+
+    <div id="games"><h2>Your games</h2>
+      <ul id="games-list"></ul>
+    </div>
+  </div>
+
+</div>
+</div>
