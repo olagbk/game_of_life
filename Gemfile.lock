@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/zdennis/activerecord-import.git
+  revision: 6c06b3ceb53f83e1ce930eab35cdd4b6375c57ca
+  specs:
+    activerecord-import (0.10.0)
+      activerecord (>= 3.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -143,6 +150,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activerecord-import!
   bcrypt (~> 3.1.7)
   byebug
   coffee-rails (~> 4.1.0)

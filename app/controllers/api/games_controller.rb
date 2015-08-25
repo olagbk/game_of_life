@@ -7,7 +7,6 @@ class Api::GamesController < ApplicationController
   end
 
   def index
-
     @games = Game.where({:user_id=>get_user})
 
     respond_to do |format|
@@ -15,24 +14,36 @@ class Api::GamesController < ApplicationController
     end
   end
 
+  def update
+    @game = Game.find(params[:id])
+    prms_game = params[:game].permit(:rows, :columns)
+
+    @game.rows = prms_game[:rows]
+    @game.columns = prms_game[:columns]
+    @game.save!
+
+    update_cells();
+
+    respond_to do |format|
+      format.json { render :json => @game.to_json(:include => :living_cells) }
+    end
+
+  end
+
   def create
     @game = Game.new(params[:game].permit(:rows, :columns, :name))
     @game.user = get_user
     @game.save!
 
-    @living_cells = params[:living_cells]
-    @living_cells.each_with_index do |pair, idx|
-      coord_array = pair.last
-      @cell = LivingCell.new({:row=>coord_array[0], :column=>coord_array[1]})
-      @cell.game = @game
-      @cell.save!
-    end
+    update_cells();
 
     @games = Game.where({:user_id=>get_user})
 
     respond_to do |format|
       format.json { render :json => @games }
     end
+
+
 
   end
 
@@ -56,4 +67,26 @@ class Api::GamesController < ApplicationController
       end
     end
   end
+end
+
+def update_cells
+  LivingCell.where({game_id: @game.id}).destroy_all
+
+
+  cells = params[:living_cells]
+  @living_cells = []
+  if cells
+    @living_cells = cells
+  end
+
+  to_import = []
+
+  @living_cells.each_with_index do |pair, idx|
+    coord_array = pair.last
+    @cell = LivingCell.new({:row=>coord_array[0], :column=>coord_array[1]})
+    @cell.game = @game
+    to_import << @cell
+  end
+
+  LivingCell.import(to_import)
 end

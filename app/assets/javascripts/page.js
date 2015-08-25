@@ -1,9 +1,7 @@
 /**
- * Created by reis on 8/4/15.
- */
-/**
  * Created by reis on 7/30/15.
  */
+
 var Helpers = {
     get_coords: function(cell_key) {
         var cell_position = cell_key.split("_");
@@ -32,7 +30,6 @@ var Simulation = function(prm_x, prm_y) {
         $.each(this.cells, function(cell_key) {
 
             var coords = Helpers.get_coords(cell_key);
-
             var liveNeighbors = 0;
 
             for (var i = coords[0] - 1; i<= coords[0] + 1; i++) {
@@ -61,43 +58,82 @@ var Simulation = function(prm_x, prm_y) {
                     };
                 };
             };
-
-
             if ((liveNeighbors < 2) || (liveNeighbors > 3)) {
                 cellsToDelete.push(cell_key);
             };
         });
-
         $.each(cellsToDelete, function(idx, cell_key) {
+
             delete my.cells[cell_key];
         });
-
         $.each(deadNeighbors, function (neighbor_key) {
+
             if (deadNeighbors[neighbor_key] == 3) {
+
                 my.cells[neighbor_key] = true;
             };
         });
-
     };
 };
 
 $(document).ready(function() {
+
+    var simulation = new Simulation();
 
     var setHeaders = function(){
         $.ajaxSetup({
             headers: {"x-login-token": localStorage.login_token}
         });
     };
+    var Game = function(){
+        var my = this;
+        this.name = $("#game-title").val();
+        this.rows = simulation.dimensions.x;
+        this.columns = simulation.dimensions.y;
+        this.living_cells = [];
+
+        this.createCells = function(){
+
+            $.each(simulation.cells, function(cell_key) {
+
+                coords = Helpers.get_coords(cell_key);
+                my.living_cells.push([coords[0], coords[1]]);
+            });
+        };
+        this.createCells();
+    };
+
+    var init_session = function(username, password) {
+        $.ajax({
+            url: "/api/users/verify",
+            method: "GET",
+            data: {
+                user: {
+                    "name": username,
+                    "password": password
+                }
+            },
+            success: function(token_obj){
+                if (token_obj) {
+                    localStorage.login_token = token_obj.token;
+                    setHeaders();
+                    fetch_games_list();
+                    $(".session-toggle").toggle();
+                    $(".sidebar-box").hide();
+                    $("#games").show();
 
 
-    var simulation = new Simulation();
+                }
+            }
+        });
+    }
 
     var fetch_games_list = function(){
         if(!localStorage.login_token){
             return;
         }
 
-        $("#logout").show();
+        $("#game-panel").show();
         $("#games").show();
         $.ajax({
             url: "/api/games",
@@ -109,10 +145,11 @@ $(document).ready(function() {
     };
 
     var render_games_list = function(games_array){
+
         $("#games-list").empty();
 
         $.each (games_array, function(game_index, game_obj) {
-            $("#games-list").append("<li><a href='#' class='game-item' id="+game_obj.id+">"+game_obj.name+"</a><a class='delete-link' href='#' id="+game_obj.id+"> Delete</a></li>");
+            $("#games-list").append("<li><a href='#' class='game-item' id="+game_obj.id+">"+game_obj.name+"</a><a class='delete-link' href='#' id="+game_obj.id+"> [delete]</a></li>");
         });
 
         $("a.delete-link").click(function(){
@@ -136,12 +173,9 @@ $(document).ready(function() {
             $.ajax({
                 url: "/api/games/" + game_id,
                 method: "GET",
-                data: {
-                    game: {
-                        "id": game_id
-                    }
-                },
+
                 success: function(game_obj) {
+
                     simulation.dimensions.x = game_obj.rows;
                     simulation.dimensions.y = game_obj.columns;
                     simulation.cells = {};
@@ -154,6 +188,11 @@ $(document).ready(function() {
                     create_grid(simulation);
                     update_cells(simulation);
 
+                    localStorage.last_game = game_id;
+                    $(".sidebar-box").hide();
+                    $("#game-panel").show();
+                    $("#game-name").html(game_obj.name);
+
                 }
             })
         });
@@ -165,6 +204,52 @@ $(document).ready(function() {
             $("[x-data-coord="+cell_key+"]").addClass("active");
         });
     };
+    var add_game = function() {
+        var game = new Game();
+        $.ajax({
+            url: "/api/games",
+            method: "POST",
+            data: {
+                game: {
+                    "name": game.name,
+                    "rows": game.rows,
+                    "columns": game.columns
+                },
+                living_cells: game.living_cells
+            },
+            success: function(games_array) {
+                render_games_list(games_array);
+                $("#save-form").hide();
+            }
+        })
+
+    };
+    var save_game = function(){
+        var game = new Game();
+        var game_id = localStorage.last_game;
+        $("#saving-alert").show();
+        $.ajax({
+            url: "/api/games/" + game_id,
+            method: "PUT",
+            data: {
+                game: {
+                    "rows": game.rows,
+                    "columns": game.columns,
+                    "id": game_id
+                },
+                living_cells: game.living_cells
+            },
+            success: function(games_array) {
+                $("#saving-alert").hide();
+                flash_alert_message('#saved-alert')
+            }
+        })
+    }
+
+    var flash_alert_message = function(id){
+        $(id).show();
+        $(id).delay(2000).fadeOut('fast');
+    }
 
     var create_grid = function(simulation){
         $("#grid").empty();
@@ -196,8 +281,6 @@ $(document).ready(function() {
     };
 
     var init = function(){
-        setHeaders();
-        fetch_games_list();
 
         var fps = 10;
         var frameDuration = parseInt(1000/fps);
@@ -210,145 +293,112 @@ $(document).ready(function() {
                 setTimeout(animate, frameDuration);
             }
         };
-        var update_games = function(games_array) {
-            $.each (games_array, function(game_index, game_obj) {
-                $("#games-list").append("<li>"+game_obj.name+"</li>");
-            });
-        };
 
+        localStorage.removeItem("last_game");
 
+        if (localStorage.login_token){
+            $(".logged-in").not("#game-panel").show();
+            $("#login-link").hide();
+            $("#game-panel").hide();
+        }
+//        else {
+//            $("#login-form").show();
+//        }
 
-        $("#run-button").click(function(){
+        //handlers for navigation bar elements
+
+        $("#signup-link").click(function(){
+            if (localStorage.login_token) {
+                flash_alert_message('#logged-in-warning')
+            }
+            else {
+                $(".sidebar-box").not("#signup-form").hide();
+                $("#signup-form").toggle();
+            }
+        });
+        $("#login-link").click(function(){
+            if (localStorage.login_token) {
+                flash_alert_message('#logged-in-warning')
+            }
+            else {
+                $(".sidebar-box").not("#login-form").hide();
+                $("#login-form").toggle();
+            }
+        });
+        $("#dimensions-link").click(function(){
+            $(".sidebar-box").not("#dimensions-form").not("#game-panel").hide();
+            $("#dimensions-form").toggle();
+        });
+        $("#run-link").click(function(){
             animate();
         });
-
-        $("#reset-button").click(function(){
-
+        $("#reset-link").click(function(){
+            simulation.cells = {};
+            update_cells(simulation);
         });
 
-        $("#dimensions-link").click(function(){
-            $("#dimensions-form").toggle();
+        //handlers for buttons
+
+        $("#signup-button").click(function(){
+            $("#signup-form").hide();
+            var username = $("#signup-name").val();
+            var password = $("#signup-password").val();
+            $.ajax({
+                url: "/api/users",
+                method: "POST",
+                data: {
+                    user: {
+                        "name": username,
+                        "password": password
+                    }
+                },
+                success: function(user){
+                    init_session(username, password);
+                }
+            });
+        });
+
+        $("#login-button").click(function(){
+            $("#login-form").hide();
+            var username = $("#login-name").val();
+            var password = $("#login-password").val();
+            init_session(username, password);
+
         });
 
         $("#resize-grid").click(function(){
-            $("#dimensions-form").toggle();
+            $("#resize-grid").hide();
             var x = $("#rows").val();
             var y = $("#columns").val();
             simulation = new Simulation(x, y);
             create_grid(simulation);
         });
 
-
-        $("#signup-link").click(function(){
-            $("#signup-form").toggle();
-        });
-
-        $("#signup-button").click(function(){
-            $("#signup-form").toggle();
-            var signup_name = $("#signup-name").val();
-            var signup_password = $("#signup-password").val();
-            $.ajax({
-                url: "/api/users",
-                method: "POST",
-                data: {
-                    user: {
-                        "name": signup_name,
-                        "password": signup_password
-                    }
-                },
-                success: function(user){
-                    console.log(user);
-                }
-            });
-
-        });
-
-        $("#login-link").click(function(){
-            $("#login-form").toggle();
-        });
-
-        $("#login-button").click(function(){
-            $("#login-form").toggle();
-
-            var login_name = $("#login-name").val();
-            var login_password = $("#login-password").val();
-            $.ajax({
-                url: "/api/users/verify",
-                method: "GET",
-                data: {
-                    user: {
-                        "name": login_name,
-                        "password": login_password
-                    }
-                },
-                success: function(token_obj){
-                    if (token_obj) {
-                        localStorage.login_token = token_obj.token;
-                        $("#login").css("display", "none");
-                        $("#logout").css("display", "inline");
-
-                        setHeaders();
-                        fetch_games_list();
-
-                    }
-                }
-            });
-
-        });
-
-        $("#logout-button").click(function(){
+        $("#logout-link").click(function(){
             localStorage.removeItem("login_token");
-            $("#login").css("display", "inline");
-            $("#logout").css("display", "none");
-            $("games").hide();
+            $(".logged-in").hide();
+            $("#login-link").show();
         });
+
+        //handlers for game management elements
 
 
         $("#add-link").click(function(){
+            $(".sidebar-box").not("#save-form").hide();
             $("#save-form").toggle();
-            if (!localStorage.login_token) {
-                $("#no-user-warning").show();
-            }
         })
+
         $("#add-button").click(function(){
-            var game_name = $("#game-title").val();
-            var game_rows = simulation.dimensions.x;
-            var game_columns = simulation.dimensions.y;
-            var living_cells = [];
-            $.each(simulation.cells, function(cell_key) {
-
-                var cell_position = cell_key.split("_");
-                var cell_x = parseInt(cell_position[0]);
-                var cell_y = parseInt(cell_position[1]);
-                living_cells.push([cell_x, cell_y]);
-
-            });
-
-            $.ajax({
-                url: "/api/games",
-                method: "POST",
-                headers: {"x-login-token": localStorage.login_token},
-                data: {
-                    game: {
-                        "name": game_name,
-                        "rows": game_rows,
-                        "columns": game_columns
-                    },
-                    living_cells: living_cells
-                },
-                success: function(games_array) {
-                    render_games_list(games_array);
-
-                }
-            })
-
-
+            add_game();
         });
 
-
-        create_grid(simulation);
+        $("#update-link").click(function(){
+            save_game();
+        });
     };
 
+    create_grid(simulation);
+    setHeaders();
+    fetch_games_list();
     init();
-
 });

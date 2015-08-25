@@ -5,47 +5,55 @@
   </div>
 
   <div id="navigation">
-    <ul>
-      <li><a href="#" id="signup-link">sign up</a></li>
-      <li><a href="#" id="login-link">sign in</a></li>
-      <li><a href="#" id="dimensions-link">change grid size</a></li>
-      <li><a href="#" id="run-button">run simulation</a></li>
-      <li><a href="#" id="reset-button">reset grid</a></li>
-      <li><a href="#" id="add-link">save game</a></li>
 
+    <ul>
+      <li><a href="#" id="dimensions-link">change grid size</a></li>
+      <li><a href="#" id="run-link">run simulation</a></li>
+      <li><a href="#" id="reset-link">reset grid</a></li>
+      <li><a>Oh my days!</a></li>
+      <li><a href="#" id="signup-link">sign up</a></li>
+      <li class="session-toggle" id="login-link"><a href="#">sign in</a></li>
+      <li class="session-toggle logged-in" id="logout-link"><a href="#">log out</a></li>
 
     </ul>
-  </div>
 
+</div>
 
   <div id="content">
-    <div id="grid"></div>
+  <div id="grid"></div>
   </div>
   <div id="subcontent">
 
-    <div id="signup-form"><form>Username:<input id="signup-name"><br>Password:<input id="signup-password"><br><br>
+    <div class="sidebar-box" id="logged-in-warning">You are already logged in.</div>
+    <div class="sidebar-box" id="no-user-warning">You have to be logged in to add games.</div>
+    <div class="sidebar-box" id="saved-alert">Your game has been saved.</div>
+    <div class="sidebar-box" id="saving-alert">saving...</div>
+
+    <div class="sidebar-box" id="dimensions-form"><form>Rows (max. 200):&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="numeric" id="rows"><br><br>Columns (max. 200):&nbsp;<input class="numeric" id="columns"><br><br>
+      <input type="button" id="resize-grid" value="Set dimensions"></form><br></div>
+
+
+    <div class="sidebar-box" id="save-form"><form>Game title:<input id="game-title"><br><br>
+      <input type="button" id="add-button" value="Add new game"></form><br></div>
+
+
+      <div class="sidebar-box" id="signup-form"><form>Username:<input id="signup-name"><br>Password:<input id="signup-password"><br><br>
       <input type="button" id="signup-button" value="Sign Up!"></form><br></div>
 
-    <div id="login-form"><form>Username:<input id="login-name"><br>Password:<input id="login-password"><br><br>
+    <div class="sidebar-box" id="login-form"><form>Username:<input id="login-name"><br>Password:<input id="login-password"><br><br>
       <input type="button" id="login-button" value="Sign In!"></form><br></div>
 
-    <div id="logout"><form id="logout-form">
-      <input type="button" id="logout-button" value="Logout"></form></div>
-
-    <div id="dimensions-form"><form>Rows:<input id="rows"><br>Columns:<input id="columns"><br><br>
-      <input type="button" id="resize-grid" value="Set"></form><br></div>
-
-    <div id="save-form"><form>Game title:<input id="game-title"><br><br>
-      <input type="button" id="add-button" value="Add new game"></form><br>
-    <p id="no-user-warning">You have to be logged in to add games.</p></div>
+    <div class="sidebar-box logged-in" id="game-panel">
+      <h3 id="game-name"></h3>
+      <ul>
+      <a href="#" id="update-link">save changes</a>
+      </ul>
+      </div>
 
 
 
-
-    <div id="games"><h2>Your games</h2>
-      <ul id="games-list"></ul>
+    <div class="logged-in" id="games"><h2>Your games</h2>
+    <ul id="games-list"></ul><br><a href="#" id="add-link">add new game</a>
     </div>
-  </div>
-
 </div>
 </div>
