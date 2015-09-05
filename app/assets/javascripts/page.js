@@ -13,6 +13,10 @@ var Helpers = {
     get_cell_key: function(x, y) {
         var cell_key = x + "_" + y;
         return cell_key;
+    },
+    flash_alert_message: function(id){
+        $(id).show();
+        $(id).delay(2000).fadeOut('fast');
     }
 }
 
@@ -125,13 +129,12 @@ $(document).ready(function() {
                 }
             }
         });
-    }
+    };
 
     var fetch_games_list = function(){
         if(!localStorage.login_token){
             return;
-        }
-
+        };
         $("#game-panel").show();
         $("#games").show();
         $.ajax({
@@ -144,7 +147,6 @@ $(document).ready(function() {
     };
 
     var render_games_list = function(games_array){
-
         $("#games-list").empty();
         $.each (games_array, function(game_index, game_obj) {
             $("#games-list").append("<li><a href='#' class='game-item' id="+game_obj.id+">"+game_obj.name+"</a><a class='delete-link' href='#' id="+game_obj.id+"> [delete]</a></li>");
@@ -181,7 +183,6 @@ $(document).ready(function() {
                         simulation.cells[cell_key] = true;
                     });
 
-                    create_grid(simulation);
                     update_cells(simulation);
 
                     localStorage.last_game = game_id;
@@ -194,15 +195,7 @@ $(document).ready(function() {
         });
     };
 
-    var update_cells = function(simulation){
-        draw_canvas();
-        $.each(simulation.cells, function(cell_key) {
-            var coords = Helpers.get_coords(cell_key);
-            paint_cell(coords[0], coords[1]);
-        });
-//            $("[x-data-coord="+cell_key+"]").addClass("active");
-//        });
-    };
+
     var add_game = function() {
         var game = new Game();
         $.ajax({
@@ -240,99 +233,119 @@ $(document).ready(function() {
             },
             success: function(games_array) {
                 $("#saving-alert").hide();
-                flash_alert_message('#saved-alert')
+                Helpers.flash_alert_message('#saved-alert')
             }
         })
     }
 
-    var flash_alert_message = function(id){
-        $(id).show();
-        $(id).delay(2000).fadeOut('fast');
-    };
-    var paint_cell = function(x, y){
-        ctx.fillStyle = "white";
-        ctx.fillRect(x*cw, y*cw, cw, cw);
-        ctx.strokeStyle = "grey";
-        ctx.strokeRect(x*cw, y*cw, cw, cw);
-    };
-    var blank_cell = function(x, y){
-        ctx.fillStyle = "black";
-        ctx.fillRect(x*cw, y*cw, cw, cw);
-        ctx.strokeStyle = "grey";
-        ctx.strokeRect(x*cw,y*cw,cw,cw);
-
-    };
+    // canvas stuff
 
     var canvas = $("#grid")[0];
     var ctx = canvas.getContext('2d');
-    var cw = 10;
-    var draw_canvas = function(){
-        var width = 50 * cw;
-        var height = 50 * cw;
-        //$("#grid").css("width", width);
-        //$("#grid").css("height", height);
+    var cs = 10;
 
-        var cells = [];
+    var draw_canvas = function(simulation){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        //canvas dimensions
+        var width = $("#grid").width();
+        var height = $("#grid").height();
 
+        //game dimensions
+        var x = simulation.dimensions.x;
+        var y = simulation.dimensions.y;
 
-        for (var i=0;i<60;i++){
-            for (var j=0;j<60;j++){
+        //calculate cell side
+        var cw = (width / x);
+        var ch = (height / y);
+        cs = (cw > ch)? ch : cw;
+
+        //generate empty grid
+        for (var i=0;i<x;i++){
+            for (var j=0;j<y;j++){
                 blank_cell(i, j);
             }
         };
     };
-    $('#grid').click(function (e) {
+    var update_cells = function(simulation){
+        draw_canvas(simulation);
+        $.each(simulation.cells, function(cell_key) {
+            var coords = Helpers.get_coords(cell_key);
+            paint_cell(coords[0], coords[1]);
+        });
+    };
+    var paint_cell = function(x, y){
+        ctx.fillStyle = "white";
+        ctx.fillRect(x*cs, y*cs, cs, cs);
+        ctx.strokeStyle = "grey";
+        ctx.strokeRect(x*cs, y*cs, cs, cs);
+    };
+    var blank_cell = function(x, y){
+        ctx.fillStyle = "black";
+        ctx.fillRect(x*cs, y*cs, cs, cs);
+        ctx.strokeStyle = "grey";
+        ctx.strokeRect(x*cs,y*cs,cs,cs);
+    };
 
+    var mouseDown = false;
+    var coords, coord_id;
+    var mx, my;
+
+    canvas.onmousedown = function(e){
+        mouseDown = true;
+
+        //get click coordinates
         var clickedX = e.pageX - this.offsetLeft;
         var clickedY = e.pageY - this.offsetTop;
-        var coords = [Math.floor(clickedX/cw), Math.floor(clickedY/cw)];
-        var coord_id = Helpers.get_cell_key(coords[0], coords[1]);
-        console.log(coords);
-        console.log(coord_id);
-        var cell_data = simulation.cells[coord_id];
-        (cell_data) ? blank_cell(coords[0], coords[1]) : paint_cell(coords[0], coords[1]);
-        if(cell_data) {
-            delete simulation.cells[coord_id];
-        }
-        else {
-            simulation.cells[coord_id] = true;
-        }
-     });
 
+        //get cell coordinates
+        coords = [Math.floor(clickedX/cs), Math.floor(clickedY/cs)];
+        coord_id = Helpers.get_cell_key(coords[0], coords[1]);
 
-    var create_grid = function(simulation){
-        $("#grid").empty();
-        for(var coord_x = 0; coord_x < simulation.dimensions.x; coord_x++){
-            for(var coord_y = 0; coord_y < simulation.dimensions.y; coord_y++){
-                var cell_el = $("<div></div>");
-                $("#grid").append(cell_el);
-                cell_el.addClass("cell");
-                cell_el.attr("x-data-coord", (coord_x + "_" + coord_y));
-            };
-        };
-
-        var cell_width = 12;
-        $("#grid").css("width", (simulation.dimensions.x * cell_width).toString()  + "px");
-        $("#grid").css("height", (simulation.dimensions.y * cell_width).toString()  + "px");
-
-        $(".cell").click(function(){
-            var coord_id = $(this).attr("x-data-coord");
+        //update canvas state
+        var select_cells = function(){
             var cell_data = simulation.cells[coord_id];
-            var desired_action = (cell_data)? "removeClass" : "addClass";
-            $(this)[desired_action]("active");
+            (cell_data) ? blank_cell(coords[0], coords[1]) : paint_cell(coords[0], coords[1]);
             if(cell_data) {
                 delete simulation.cells[coord_id];
             }
             else {
                 simulation.cells[coord_id] = true;
-            }
-        });
+            };
+        };
+        select_cells();
+
+        canvas.onmousemove = function(e){
+
+            //get updated mouse coordinates
+            var getMouse = function(e) {
+                var element = canvas, offsetX = 0, offsetY = 0;
+
+                if (element.offsetParent) {
+                    do {
+                        offsetX += element.offsetLeft;
+                        offsetY += element.offsetTop;
+                    } while ((element = element.offsetParent));
+                };
+                mx = e.pageX - offsetX;
+                my = e.pageY - offsetY
+            };
+            getMouse(e);
+
+            coords = [Math.floor(mx/cs), Math.floor(my/cs)];
+            coord_id = Helpers.get_cell_key(coords[0], coords[1]);
+            select_cells();
+
+        }
     };
+    canvas.onmouseup = function(){
+        mouseDown = false;
+        canvas.onmousemove = null;
+    }
 
     var init = function(){
-        draw_canvas();
-        var fps = 10;
+        draw_canvas(simulation);
+        var fps = 20;
         var frameDuration = parseInt(1000/fps);
 
         var animate = function(){
@@ -351,15 +364,15 @@ $(document).ready(function() {
             $("#login-link").hide();
             $("#game-panel").hide();
         }
-//        else {
-//            $("#login-form").show();
-//        }
+        else {
+            $("#login-form").show();
+        }
 
         //handlers for navigation bar elements
 
         $("#signup-link").click(function(){
             if (localStorage.login_token) {
-                flash_alert_message('#logged-in-warning')
+                Helpers.flash_alert_message('#logged-in-warning')
             }
             else {
                 $(".sidebar-box").not("#signup-form").hide();
@@ -368,7 +381,7 @@ $(document).ready(function() {
         });
         $("#login-link").click(function(){
             if (localStorage.login_token) {
-                flash_alert_message('#logged-in-warning')
+                Helpers.flash_alert_message('#logged-in-warning')
             }
             else {
                 $(".sidebar-box").not("#login-form").hide();
@@ -417,11 +430,11 @@ $(document).ready(function() {
         });
 
         $("#resize-grid").click(function(){
-            $("#resize-grid").hide();
+            $("#dimensions-form").hide();
             var x = $("#rows").val();
             var y = $("#columns").val();
             simulation = new Simulation(x, y);
-            create_grid(simulation);
+            update_cells(simulation);
         });
 
         $("#logout-link").click(function(){
@@ -436,7 +449,7 @@ $(document).ready(function() {
         $("#add-link").click(function(){
             $(".sidebar-box").not("#save-form").hide();
             $("#save-form").toggle();
-        })
+        });
 
         $("#add-button").click(function(){
             add_game();
@@ -447,7 +460,6 @@ $(document).ready(function() {
         });
     };
 
-    create_grid(simulation);
     setHeaders();
     fetch_games_list();
     init();
