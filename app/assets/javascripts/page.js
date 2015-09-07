@@ -136,7 +136,7 @@ $(document).ready(function() {
             return;
         };
         $("#game-panel").show();
-        $("#games").show();
+
         $.ajax({
             url: "/api/games",
             method: "GET",
@@ -360,12 +360,8 @@ $(document).ready(function() {
         localStorage.removeItem("last_game");
 
         if (localStorage.login_token){
-            $(".logged-in").not("#game-panel").show();
-            $("#login-link").hide();
-            $("#game-panel").hide();
-        }
-        else {
-            $("#login-form").show();
+            $(".logged-in").show();
+            $(".logged-out").hide();
         }
 
         //handlers for navigation bar elements
@@ -440,7 +436,7 @@ $(document).ready(function() {
         $("#logout-link").click(function(){
             localStorage.removeItem("login_token");
             $(".logged-in").hide();
-            $("#login-link").show();
+            $(".logged-out").show();
         });
 
         //handlers for game management elements
