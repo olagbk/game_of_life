@@ -21,9 +21,9 @@ var Helpers = {
 }
 
 var Simulation = function(prm_x, prm_y) {
-    var rows = prm_x || 50;
-    var columns = prm_y || 50;
-    this.dimensions = {x: rows, y: columns};
+    var columns = prm_x || 75;
+    var rows = prm_y || 50;
+    this.dimensions = {x: columns, y: rows};
     this.cells = {};
 
     this.step = function() {
@@ -89,22 +89,6 @@ $(document).ready(function() {
             headers: {"x-login-token": localStorage.login_token}
         });
     };
-    var Game = function(){
-        var my = this;
-        this.name = $("#game-title").val();
-        this.rows = simulation.dimensions.x;
-        this.columns = simulation.dimensions.y;
-        this.living_cells = [];
-
-        this.createCells = function(){
-
-            $.each(simulation.cells, function(cell_key) {
-                var coords = Helpers.get_coords(cell_key);
-                my.living_cells.push([coords[0], coords[1]]);
-            });
-        };
-        this.createCells();
-    };
 
     var init_session = function(username, password) {
         $.ajax({
@@ -123,20 +107,33 @@ $(document).ready(function() {
                     fetch_games_list();
                     $(".logged-in").show();
                     $(".logged-out").hide();
-
-
-
                 }
             }
         });
     };
 
+    var Game = function(){
+        var my = this;
+        this.name = $("#game-title").val();
+        this.rows = simulation.dimensions.x;
+        this.columns = simulation.dimensions.y;
+        this.living_cells = [];
+
+        this.createCells = function(){
+
+            $.each(simulation.cells, function(cell_key) {
+                var coords = Helpers.get_coords(cell_key);
+                my.living_cells.push([coords[0], coords[1]]);
+            });
+        };
+        this.createCells();
+    };
+
     var fetch_games_list = function(){
+
         if(!localStorage.login_token){
             return;
         };
-        $("#game-panel").show();
-
         $.ajax({
             url: "/api/games",
             method: "GET",
@@ -147,10 +144,13 @@ $(document).ready(function() {
     };
 
     var render_games_list = function(games_array){
+
         $("#games-list").empty();
+
         $.each (games_array, function(game_index, game_obj) {
             $("#games-list").append("<li><a href='#' class='game-item' id="+game_obj.id+">"+game_obj.name+"</a><a class='delete-link' href='#' id="+game_obj.id+"> [delete]</a></li>");
         });
+
         $("a.delete-link").click(function(){
             var game_id = $(this).attr('id');
             $.ajax({
@@ -186,15 +186,12 @@ $(document).ready(function() {
                     update_cells(simulation);
 
                     localStorage.last_game = game_id;
-                    $(".sidebar-box").hide();
                     $("#game-panel").show();
                     $("#game-name").html(game_obj.name);
-
                 }
             })
         });
     };
-
 
     var add_game = function() {
         var game = new Game();
@@ -211,10 +208,8 @@ $(document).ready(function() {
             },
             success: function(games_array) {
                 render_games_list(games_array);
-                $("#save-form").hide();
             }
         })
-
     };
     var save_game = function(){
         var game = new Game();
@@ -238,18 +233,17 @@ $(document).ready(function() {
         })
     }
 
-    // canvas stuff
+    //canvas stuff
 
     var canvas = $("#grid")[0];
     var ctx = canvas.getContext('2d');
     var cs = 10;
 
     var draw_canvas = function(simulation){
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         //canvas dimensions
         var width = $("#grid").width();
-        var height = $("#grid").height();
+        var height =$("#grid").height();
 
         //game dimensions
         var x = simulation.dimensions.x;
@@ -259,6 +253,14 @@ $(document).ready(function() {
         var cw = (width / x);
         var ch = (height / y);
         cs = (cw > ch)? ch : cw;
+
+        //calculate new canvas dimensions
+        var new_width = (cs * x);
+        var new_height = (cs * y);
+
+        //resize the canvas
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         //generate empty grid
         for (var i=0;i<x;i++){
@@ -344,20 +346,25 @@ $(document).ready(function() {
     }
 
     var init = function(){
-        draw_canvas(simulation);
-        var fps = 20;
+
+        var fps = 30;
         var frameDuration = parseInt(1000/fps);
+        var idle = true;
+
+        draw_canvas(simulation);
 
         var animate = function(){
             if(simulation){
                 simulation.step();
                 update_cells(simulation);
-
-                setTimeout(animate, frameDuration);
+                if (!idle){
+                    setTimeout(animate, frameDuration);
+                }
             }
         };
 
         localStorage.removeItem("last_game");
+        $("#game-panel").hide();
 
         if (localStorage.login_token){
             $(".logged-in").show();
@@ -366,29 +373,8 @@ $(document).ready(function() {
 
         //handlers for navigation bar elements
 
-        $("#signup-link").click(function(){
-            if (localStorage.login_token) {
-                Helpers.flash_alert_message('#logged-in-warning')
-            }
-            else {
-                $(".sidebar-box").not("#signup-form").hide();
-                $("#signup-form").toggle();
-            }
-        });
-        $("#login-link").click(function(){
-            if (localStorage.login_token) {
-                Helpers.flash_alert_message('#logged-in-warning')
-            }
-            else {
-                $(".sidebar-box").not("#login-form").hide();
-                $("#login-form").toggle();
-            }
-        });
-        $("#dimensions-link").click(function(){
-            $(".sidebar-box").not("#dimensions-form").not("#game-panel").hide();
-            $("#dimensions-form").toggle();
-        });
         $("#run-link").click(function(){
+            idle = (idle)? false : true;
             animate();
         });
         $("#reset-link").click(function(){
@@ -399,7 +385,6 @@ $(document).ready(function() {
         //handlers for buttons
 
         $("#signup-button").click(function(){
-            $("#signup-form").hide();
             var username = $("#signup-name").val();
             var password = $("#signup-password").val();
             $.ajax({
@@ -418,17 +403,14 @@ $(document).ready(function() {
         });
 
         $("#login-button").click(function(){
-            $("#login-form").hide();
             var username = $("#login-name").val();
             var password = $("#login-password").val();
             init_session(username, password);
-
         });
 
         $("#resize-grid").click(function(){
-
-            var x = $("#rows").val();
-            var y = $("#columns").val();
+            var x = $("#columns").val();
+            var y = $("#rows").val();
             simulation = new Simulation(x, y);
             update_cells(simulation);
         });
@@ -440,12 +422,6 @@ $(document).ready(function() {
         });
 
         //handlers for game management elements
-
-
-        $("#add-link").click(function(){
-            $(".sidebar-box").not("#save-form").hide();
-            $("#save-form").toggle();
-        });
 
         $("#add-button").click(function(){
             add_game();

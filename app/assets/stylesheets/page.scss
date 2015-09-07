@@ -4,10 +4,7 @@
   color:#ffffff;
   background:#000000;
 
-  canvas{
-    width: 600;
-    height: 600;
-  }
+
 
   h1{
     padding:25px 0 0 20px;
@@ -24,12 +21,15 @@
     text-align:center;
     text-shadow: 2px 2px #080808;
     color:#80a630;
+    padding: 5px;
+
   }
 
   h3 {
-    padding: 0 0 8px 0;
+
     color:#80a630;
     letter-spacing:1px;
+    padding-bottom: 10px;
   }
 
   h4 {
@@ -38,7 +38,7 @@
   }
 
   a{
-    color:#C0D298;
+    color:#C8C8C8;
     font-weight:bold;
     text-decoration:none;
   }
@@ -66,6 +66,10 @@
     background-color:#000000;
     color: #999999;
     padding: 5px;
+  }
+
+  .alert {
+    display: none;
 
   }
   #games ul {
@@ -130,51 +134,10 @@
   }
 
   #content{
-    float:left;
-    width:610px;
     padding:20px 0px 0 10px;
   }
 
-  #subcontent{
-    float:right;
-    width:210px;
-    padding:20px 20px 10px 0;
-    line-height:1.4em;
-  }
-
-  #subcontent div{
-    display: none;
-    margin:0 0 20px 0;
-    padding:10px;
-    border:1px solid #333333;
-    background-color:#000000;
-    color:#999999;
-    line-height:1.5em;
-  }
-
-  #grid {
-    font-size: 0px;
-  }
-
-  .cell {
-    width: 10px;
-    height: 10px;
-    background-color: grey;
-    border: 1px solid black;
-    display: inline-block;
-  }
-  #logout-link {
-    color: #80a630;
-
-  }
-  .active {
-    background-color: #F0F0F0;
-  }
-
   .logged-in {
-    display: none;
-  }
-  #no-user-warning {
     display: none;
   }
 
@@ -198,7 +161,7 @@
     font-size: 0.8em;
     font-weight: bold;
     text-transform: uppercase;
-    }
+  }
   .modal-body {
     padding-left: 0;
   }
