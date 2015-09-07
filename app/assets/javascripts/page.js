@@ -121,9 +121,9 @@ $(document).ready(function() {
                     localStorage.login_token = token_obj.token;
                     setHeaders();
                     fetch_games_list();
-                    $(".session-toggle").toggle();
-                    $(".sidebar-box").hide();
-                    $("#games").show();
+                    $(".logged-in").show();
+                    $(".logged-out").hide();
+
 
 
                 }
@@ -430,7 +430,7 @@ $(document).ready(function() {
         });
 
         $("#resize-grid").click(function(){
-            $("#dimensions-form").hide();
+
             var x = $("#rows").val();
             var y = $("#columns").val();
             simulation = new Simulation(x, y);

@@ -5,44 +5,32 @@
   </div>
 
   <div id="navigation">
-
     <ul>
-      <li><a href="#" id="dimensions-link">change grid size</a></li>
+      <li><a href="#" id="dimensions-link" data-toggle="modal" data-target="#dimensions-form">change grid size</a></li>
       <li><a href="#" id="run-link">run simulation</a></li>
       <li><a href="#" id="reset-link">reset grid</a></li>
-      <li><a>Oh my days!</a></li>
-      <li><a href="#" id="signup-link">sign up</a></li>
-      <li class="session-toggle" id="login-link"><a href="#">sign in</a></li>
-      <li class="session-toggle logged-in" id="logout-link"><a href="#">log out</a></li>
+      <li class="logged-out"><a href="#" id="ohmydays">Oh my days!</a></li>
+      <li class="logged-out"><a href="#" id="signup-link" data-toggle="modal" data-target="#signup-form">sign up</a></li>
+      <li class="logged-out session-toggle"><a href="#" id="login-link" data-toggle="modal" data-target="#login-form">sign in</a></li>
+      <li class="logged-out"><a href="#" id="add-link" data-toggle="modal" data-target="#save-form">add new game</a></li>
+      <li class="logged-in session-toggle "><a href="#" id="logout-link">log out</a></li>
 
     </ul>
 
 </div>
 
   <div id="content">
-  <!--<div id="grid"></div>-->
-    <canvas id="grid" width="600" height="600"></canvas>
+      <canvas id="grid" width="600" height="600"></canvas>
   </div>
   <div id="subcontent">
+
 
     <div class="sidebar-box" id="logged-in-warning">You are already logged in.</div>
     <div class="sidebar-box" id="no-user-warning">You have to be logged in to add games.</div>
     <div class="sidebar-box" id="saved-alert">Your game has been saved.</div>
     <div class="sidebar-box" id="saving-alert">saving...</div>
-
-    <div class="sidebar-box" id="dimensions-form"><form>Rows (max. 200):&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="numeric" id="rows"><br><br>Columns (max. 200):&nbsp;<input class="numeric" id="columns"><br><br>
-      <input type="button" id="resize-grid" value="Set dimensions"></form><br></div>
-
-
     <div class="sidebar-box" id="save-form"><form>Game title:<input id="game-title"><br><br>
       <input type="button" id="add-button" value="Add new game"></form><br></div>
-
-
-      <div class="sidebar-box" id="signup-form"><form>Username:<input id="signup-name"><br>Password:<input id="signup-password"><br><br>
-      <input type="button" id="signup-button" value="Sign Up!"></form><br></div>
-
-    <div class="sidebar-box" id="login-form"><form>Username:<input id="login-name"><br>Password:<input id="login-password"><br><br>
-      <input type="button" id="login-button" value="Sign In!"></form><br></div>
 
     <div class="sidebar-box logged-in" id="game-panel">
       <h3 id="game-name"></h3>
@@ -54,7 +42,58 @@
 
 
     <div class="logged-in" id="games"><h2>Your games</h2>
-    <ul id="games-list"></ul><br><a href="#" id="add-link">add new game</a>
+    <ul id="games-list"></ul><br>
     </div>
 </div>
 </div>
+
+<div class="modal fade" id="dimensions-form">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">set grid dimensions</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          Rows (max. 200):&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <input class="numeric" id="rows"><br><br>Columns (max. 200):&nbsp;
+          <input class="numeric" id="columns"><br><br>
+          <button type="button" id="resize-grid" class="btn btn-primary" data-dismiss="modal">submit</button>
+        </form>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="signup-form">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">make an account</h4>
+      </div>
+      <div class="modal-body">
+        <form>Username:<input id="signup-name"><br>Password:<input id="signup-password"><br><br>
+          <button type="button" id="signup-button" class="btn btn-primary" data-dismiss="modal">sign up</button>
+        </form><br>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="login-form">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">log in</h4>
+      </div>
+      <div class="modal-body">
+        <form>Username:<input id="login-name"><br>Password:<input id="login-password"><br><br>
+          <button type="button" id="login-button" class="btn btn-primary" data-dismiss="modal">submit</button>
+        </form><br>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
