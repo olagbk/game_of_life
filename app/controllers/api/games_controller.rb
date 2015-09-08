@@ -61,7 +61,7 @@ class Api::GamesController < ApplicationController
 
   def show
     @game = Game.find(params[:id])
-    if @game.user == get_user
+    if @game.id = 109 || @game.user == get_user
       respond_to do |format|
         format.json { render :json => @game.to_json(:include => :living_cells) }
       end
