@@ -34,9 +34,9 @@
       </li>
     </ul>
   </div>
-  <div id=game-stats">
+  <div id="game-stats">
     <ul>
-    <li>Frames per second: <span id="game-speed"></span></li>
+    <li>Frames per second: <span id="game-fps"></span><span id="real-fps"></span></li>
     <li>Grid dimensions: <span id="game-dimensions"></span></li>
     <li>Generation: <span id="game-generation"></span></li>
     <li>Living cells: <span id="game-cells"></span></li>
@@ -133,7 +133,7 @@
       <div class="modal-body">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h2>Your games</h2>
-        <ul id="games-list"></ul>
+        <ul id="games-list" data-dismiss="modal"></ul>
         </div>
         <div class=modal-footer">
         <a href = "" id="add-link" data-toggle="modal" data-target="#save-form" data-dismiss="modal">[new game]</a><br><br>

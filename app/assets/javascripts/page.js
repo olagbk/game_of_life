@@ -1,6 +1,4 @@
-/**
- * Created by reis on 7/30/15.
- */
+//rivvel@gmail.com, 09/2015
 
 var Helpers = {
     get_coords: function(cell_key) {
@@ -112,9 +110,9 @@ $(document).ready(function() {
             success: function(token_obj){
                 if (token_obj) {
                     localStorage.login_token = token_obj.token;
+                    set_logged_in(true);
                     setHeaders();
                     fetch_games_list();
-                    set_logged_in(true);
                 }
             }
         });
@@ -257,27 +255,31 @@ $(document).ready(function() {
         return parseInt(1000/fps);
     };
 
-
-    var game_generation_el = $("#game-generation");
-    var game_cells_el = $("#game-cells");
-    var game_dimensions_el = $("#game-dimensions");
-    var game_fps_el = $("#game-speed");
-
+    var StatElements = {
+        generation: $("#game-generation"),
+        cells: $("#game-cells"),
+        dimensions: $("#game-dimensions"),
+        game_fps: $("#game-fps"),
+        real_fps: $("#real-fps")
+        };
 
     var Data = {
         count: function(){
-            game_cells_el.text(simulation.living_cells);
+            StatElements.cells.text(simulation.living_cells);
         },
         generation: function(){
             generation += 1;
-            game_generation_el.text(generation);
+            StatElements.generation.text(generation);
         },
         dimensions: function(){
             var dimensions_str = simulation.dimensions.y + "x" + simulation.dimensions.x;
-            game_dimensions_el.text(dimensions_str);
+            StatElements.dimensions.text(dimensions_str);
         },
         frames: function(){
-            game_fps_el.text(fps);
+            StatElements.game_fps.text(fps);
+        },
+        real_fps: function(fps){
+            StatElements.real_fps.text("(" + fps + ")");
         },
         reset: function(){
             simulation.living_cells = 0;
@@ -294,13 +296,15 @@ $(document).ready(function() {
     var ctx = canvas.getContext('2d');
     var cs = 10;
 
+    var grid_x = cs * simulation.dimensions.x;
+    var grid_y = cs * simulation.dimensions.y;
+
     var draw_canvas = function(simulation){
 
         //canvas dimensions
         var width = $("#grid").width();
         var height =$("#grid").height();
 
-        //game dimensions
         var x = simulation.dimensions.x;
         var y = simulation.dimensions.y;
 
@@ -309,7 +313,13 @@ $(document).ready(function() {
         var ch = (height / y);
         cs = (cw > ch)? ch : cw;
 
+        //game dimensions
+        grid_x = (cs * simulation.dimensions.x);
+        grid_y = (cs * simulation.dimensions.y);
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        $("#content").width(grid_x).height(grid_y);
 
         //generate empty grid
         for (var i=0;i<x;i++){
@@ -375,13 +385,10 @@ $(document).ready(function() {
     canvas.onmousedown = function(e){
         mouseDown = true;
 
-        var grid_width = (cs * simulation.dimensions.x);
-        var grid_height = (cs * simulation.dimensions.y);
-
         var clickedX = e.pageX - this.offsetLeft;
         var clickedY = e.pageY - this.offsetTop;
 
-        var is_valid = Helpers.in_bounds(clickedX, clickedY, grid_width, grid_height);
+        var is_valid = Helpers.in_bounds(clickedX, clickedY, grid_x, grid_y);
 
         if (is_valid == false) {
             return;
@@ -407,7 +414,7 @@ $(document).ready(function() {
             getMouse(e);
 
             coords = [Math.floor(mx/cs), Math.floor(my/cs)];
-            is_valid = Helpers.in_bounds(mx, my, grid_width, grid_height);
+            is_valid = Helpers.in_bounds(mx, my, grid_x, grid_y);
             if (is_valid) {
             add_cell(coords);
             }
@@ -430,6 +437,7 @@ $(document).ready(function() {
     var init = function(){
 
         var idle = true;
+        var lastLoop;
 
         draw_canvas(simulation);
         fetch_games_list();
@@ -438,6 +446,7 @@ $(document).ready(function() {
         Data.dimensions();
         Data.frames();
 
+
         var animate = function(){
 
             if(simulation){
@@ -445,6 +454,13 @@ $(document).ready(function() {
                 update_cells(simulation);
                 Data.count();
                 Data.generation();
+
+                //calculates actual frame rate
+                var thisLoop = new Date;
+                var fps = parseFloat(1000 / (thisLoop - lastLoop)).toFixed(2);
+                lastLoop = thisLoop;
+                Data.real_fps(fps);
+
             }
 
             if (!idle){
