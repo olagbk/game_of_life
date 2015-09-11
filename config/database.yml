@@ -6,3 +6,9 @@ development:
   password: 'ola'
   database: 'gameoflife'
 
+production:
+  adapter: "postgresql"
+  port: 3306
+  username: 'root'
+  password: 'ola'
+  database: 'gameoflife'
