@@ -7,13 +7,11 @@
 
 
   h1{
-    padding:30px 0 35px 30px;
+    padding: 20px;
     font-size:3em;
     letter-spacing:-2px;
     font-weight:normal;
     color: #80a630;
-    margin-top: 0;
-    margin-bottom: 20px;
   }
 
   h2{
@@ -25,11 +23,9 @@
     color:#80a630;
     padding: 5px 0 20px 0;
     border-bottom: 1px solid #333333;
-
   }
 
   h3 {
-
     color:#80a630;
     letter-spacing:1px;
     padding-bottom: 10px;
@@ -41,12 +37,13 @@
   }
 
   a{
-    color:#C8C8C8;
-    font-weight:bold;
+    color:#80a630;
+    font-weight:normal;
     text-decoration:none;
   }
 
   a:hover {color:#800020;}
+  a:focus {outline: none;}
 
   a.delete-link {
     font-size: 10px;
@@ -60,7 +57,11 @@
     -webkit-margin-start: 0px;
     -webkit-margin-end: 0px;
     -webkit-padding-start: 0px;
+    & li a {
+      color: white;
+    }
   }
+
 
   input {
     color: black;
@@ -79,12 +80,9 @@
     padding: 5px;
   }
 
-  .alert {
-    display: none;
+  #games ul li{
+    padding: 5px 0 0 15px;
 
-  }
-  #games ul {
-    padding-left: 15px;
   }
 
   #games ul li a{
@@ -94,7 +92,6 @@
 
   #container{
     width:1000px;
-    height: 800px;
     margin:20px auto;
     border:2px solid #333333;
   }
@@ -108,8 +105,10 @@
   #navigation{
     height:2.2em;
     line-height:2.2em;
+    display: block;
+    width: 100%;
 
-    &.is-logged-in ul li{
+    &.is-logged-in ul.nav-menu-list>li{
       &.logged-out{
         display: none;
       }
@@ -120,12 +119,11 @@
 
     }
 
-    ul {
-      display: block;
-      width: 100%;
-      text-align: center;
+    ul.nav-menu-list {
+      display: inline-block;
+      position: relative;
 
-      li{
+      &>li{
         display: inline-block;
         list-style-type:none;
         border-color: #444;
@@ -150,15 +148,12 @@
           display: none;
         }
 
-        a {
+        &>a {
           padding:0 36px;
           font-size:0.9em;
+          font-weight: bold;
           text-transform:uppercase;
           color: #999999;
-
-          &#ohmydays{
-            color: #80a630;
-          }
 
           &:hover{
             color:#800020;
@@ -172,6 +167,75 @@
     padding:20px 0px 0 10px;
   }
 
+  #navigation ul li#upper-nav{
+    position: absolute;
+    right: 0px;
+    bottom: 100%;
+    border-color: #444;
+    border-style: solid;
+    border-width: 1px 1px 0px 1px;
+
+    #game-panel {
+      position: relative;
+      min-width: 289px;
+      background-color: #080808;
+      text-align: right;
+      padding: 0px 10px;
+
+      ul {
+        margin-right: 25px;
+
+        li {
+          display: inline;
+          a {
+            font-size: 10px;
+          }
+        }
+
+        #game-name {
+          color:#80a630;
+          letter-spacing:1px;
+          font-weight: bold;
+        }
+      }
+
+      #alerts {
+        width: 100%;
+        padding: 0px 10px;
+        position: absolute;
+        left: -100%;
+        bottom: 0px;
+
+        ul li.alert-message {
+          display: none;
+          font-size: 12px;
+          letter-spacing: 1px;
+          color: #80a630;
+          text-shadow: 2px 2px 1px black;
+        }
+      }
+    }
+  }
+
+  #game-stats {
+    display: block;
+    ul {
+      display: inline-block;
+
+      li {
+        display: inline-block;
+      }
+    }
+  }
+
+  #fps-box {
+    border-top: 1px solid #333;
+  }
+
+  #add-link {
+    padding-top: 30px;
+  }
+
   .logged-in {
     display: none;
   }
@@ -182,7 +246,7 @@
   }
   //modals css
   .modal-dialog {
-    width: 250px;
+    min-width: 250px;
     top: 150px;
 
   }
@@ -190,6 +254,7 @@
     background-color: black;
     border:1px solid #333333;
   }
+
   .modal-header {
     border-bottom: 1px solid #333333;
     color: #999999;

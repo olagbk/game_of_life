@@ -5,39 +5,74 @@
   </div>
 
   <div id="navigation">
-    <ul>
-      <li><a href="#" id="dimensions-link" data-toggle="modal" data-target="#dimensions-form">change grid size</a></li><li>
+    <ul class="nav-menu-list">
+
+      <li><a href="#" id="settings-link" data-toggle="modal" data-target="#settings-form">game settings</a></li><li>
       <a href="#" id="run-link">run simulation</a></li><li>
       <a href="#" id="reset-link">reset grid</a></li><li class="logged-out">
-      <a href="#" id="ohmydays">Oh my days!</a></li><li class="logged-out">
       <a href="#" id="signup-link" data-toggle="modal" data-target="#signup-form">sign up</a></li><li class="logged-out">
       <a href="#" id="login-link" data-toggle="modal" data-target="#login-form">sign in</a></li><li class="logged-in">
-      <a href="#" id="add-link" data-toggle="modal" data-target="#save-form">new game</a></li><li class="logged-in">
       <a href="#" id="games-link" data-toggle="modal" data-target="#games">my games</a></li><li class="logged-in">
       <a href="#" id="logout-link">log out</a></li>
+
+      <li id="upper-nav">
+        <div id="game-panel">
+          <ul>
+            <li id="game-name"></li>&nbsp;&nbsp;
+            <li><a href="#" id="update-link">save changes &middot;</a></li>
+            <li><a href="#" id="reload-link">reload &middot;</a></li>
+            <li><a href="#" id="close-link">close</a></li>
+          </ul>
+
+          <div id="alerts">
+            <ul>
+              <li class="alert-message" id="saved-alert">Your game has been saved.</li>
+              <li class="alert-message" id="saving-alert">Saving...</li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div id=game-stats">
+    <ul>
+    <li>Frames per second: <span id="game-speed"></span></li>
+    <li>Grid dimensions: <span id="game-dimensions"></span></li>
+    <li>Generation: <span id="game-generation"></span></li>
+    <li>Living cells: <span id="game-cells"></span></li>
     </ul>
   </div>
 
   <div id="content">
-      <canvas id="grid" width="900" height="600"></canvas>
+      <canvas id="grid" width="950" height="600"></canvas>
   </div>
 </div>
 
-<div class="modal fade" id="dimensions-form">
+<div class="modal fade" id="settings-form">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">set grid dimensions</h4>
+        <h4 class="modal-title">game settings</h4>
       </div>
       <div class="modal-body">
-        <form>
-          Rows (max. 200):&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <div id="dimensions-box">
+          <h4>Set grid dimensions</h4><br>
+          <form>
+          Rows: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           <input class="numeric" id="rows"><br><br>
-          Columns (max. 200):&nbsp;
+          Columns:&nbsp;&nbsp;
           <input class="numeric" id="columns"><br><br>
           <button type="button" id="resize-grid" class="btn btn-primary" data-dismiss="modal">submit</button>
-        </form>
+          </form><br>
+        </div>
+      <div id="fps-box"><br>
+        <h4>Set animation speed</h4><br>
+        <form>
+          Frames per second: &nbsp;
+          <input class="numeric" id="fps"><br><br>
+          <button type="button" id="fps-button" class="btn btn-primary" data-dismiss="modal">submit</button><br><br>
+        </form></div>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -51,7 +86,7 @@
         <h4 class="modal-title">make an account</h4>
       </div>
       <div class="modal-body">
-        <form>Username:<input id="signup-name"><br>Password:<input id="signup-password"><br><br>
+        <form>Username:&nbsp;<input id="signup-name"><br>Password:&nbsp;&nbsp;<input id="signup-password" type="password"><br><br>
           <button type="button" id="signup-button" class="btn btn-primary" data-dismiss="modal">sign up</button>
         </form><br>
       </div>
@@ -67,7 +102,7 @@
         <h4 class="modal-title">log in</h4>
       </div>
       <div class="modal-body">
-        <form>Username:<input id="login-name"><br>Password:<input id="login-password"><br><br>
+        <form>Username:&nbsp;<input id="login-name"><br>Password:&nbsp;&nbsp;<input id="login-password" type="password"><br><br>
           <button type="button" id="login-button" class="btn btn-primary" data-dismiss="modal">submit</button>
         </form><br>
       </div>
@@ -83,7 +118,7 @@
         <h4 class="modal-title">add new game</h4>
       </div>
       <div class="modal-body">
-        <form>Game title:<input id="game-title"><br><br>
+        <form>Game title:&nbsp;<input id="game-title"><br><br>
           <button type="button" id="add-button" class="btn btn-primary" data-dismiss="modal">save game</button>
         </form><br>
       </div>
@@ -94,19 +129,14 @@
 <div class="modal fade" id="games">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
-      <div class="modal-header" id="game-panel">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h3 id="game-name"></h3>
-          <a href="#" id="update-link">save changes</a><br>
-        <a href="#" id="reload-link">reload</a><br>
-        <div class="alert" id="saved-alert">Your game has been saved.</div>
-        <div class="alert" id="saving-alert">saving...</div>
-      </div>
+
       <div class="modal-body">
-
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h2>Your games</h2>
-        <ul id="games-list"></ul><br>
-
+        <ul id="games-list"></ul>
+        </div>
+        <div class=modal-footer">
+        <a href = "" id="add-link" data-toggle="modal" data-target="#save-form" data-dismiss="modal">[new game]</a><br><br>
           <button type="button" class="btn btn-primary" data-dismiss="modal">close</button><br>
         </form><br>
       </div>

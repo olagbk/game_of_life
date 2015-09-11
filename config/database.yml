@@ -3,6 +3,6 @@ development:
   adapter: "mysql"
   port: 3306
   username: 'root'
-  password: ''
+  password: 'ola'
   database: 'gameoflife'
 

@@ -7,25 +7,26 @@ var Helpers = {
         var cell_position = cell_key.split("_");
         var x = parseInt(cell_position[0]);
         var y = parseInt(cell_position[1]);
-        var coords = [x, y];
-        return coords;
+        return [x, y];
     },
     get_cell_key: function(x, y) {
-        var cell_key = x + "_" + y;
-        return cell_key;
+        return x + "_" + y;
     },
-    flash_alert_message: function(id){
+    flash_alert: function(id){
         $(id).show();
         $(id).delay(2000).fadeOut('fast');
+    },
+    in_bounds: function(x, y, container_x, container_y) {
+        return !((x >= container_x) || (y >= container_y));
     }
-}
+};
 
 var Simulation = function(prm_x, prm_y) {
-    var columns = prm_x || 75;
+    var columns = prm_x || 80;
     var rows = prm_y || 50;
     this.dimensions = {x: columns, y: rows};
     this.cells = {};
-
+    this.living_cells = 0;
     this.step = function() {
         var my = this;
         var deadNeighbors = {}; //stores keys of inactive neighbors with number of occurrences as value. An inactive cell with 3 live neighbors becomes active.
@@ -39,12 +40,12 @@ var Simulation = function(prm_x, prm_y) {
             for (var i = coords[0] - 1; i<= coords[0] + 1; i++) {
                 if (i < 0 || i >= my.dimensions.x) {
                     continue;
-                };
+                }
                 for (var j = coords[1] - 1; j<= coords[1] + 1; j++) {
                     if (j < 0 || j >= my.dimensions.y) {
                         continue;
-                    };
-                    var neighborKey = (i + "_" + j);
+                    }
+                    var neighborKey = Helpers.get_cell_key(i, j);
 
                     if (neighborKey != cell_key) {
 
@@ -58,14 +59,16 @@ var Simulation = function(prm_x, prm_y) {
                             else {
                                 (deadNeighbors[neighborKey]) = 1;
                             }
-                        };
-                    };
-                };
-            };
+                        }
+                    }
+                }
+            }
             if ((liveNeighbors < 2) || (liveNeighbors > 3)) {
                 cellsToDelete.push(cell_key);
-            };
+
+            }
         });
+        my.living_cells -= cellsToDelete.length;
         $.each(cellsToDelete, function(idx, cell_key) {
 
             delete my.cells[cell_key];
@@ -75,7 +78,8 @@ var Simulation = function(prm_x, prm_y) {
             if (deadNeighbors[neighbor_key] == 3) {
 
                 my.cells[neighbor_key] = true;
-            };
+                my.living_cells += 1;
+            }
         });
     };
 };
@@ -88,6 +92,11 @@ $(document).ready(function() {
         $.ajaxSetup({
             headers: {"x-login-token": localStorage.login_token}
         });
+    };
+
+    var set_logged_in = function(is_logged_in){
+        var desired_method = ((is_logged_in)? "addClass" : "removeClass");
+        $("#navigation")[desired_method]("is-logged-in");
     };
 
     var init_session = function(username, password) {
@@ -113,7 +122,6 @@ $(document).ready(function() {
 
     var Game = function(){
         var my = this;
-        this.name = $("#game-title").val();
         this.columns = simulation.dimensions.x;
         this.rows = simulation.dimensions.y;
         this.living_cells = [];
@@ -128,16 +136,10 @@ $(document).ready(function() {
         this.createCells();
     };
 
-    var set_logged_in = function(is_logged_in){
-        var desired_method = ((is_logged_in)? "addClass" : "removeClass");
-        $("#navigation")[desired_method]("is-logged-in");
-    };
-
     var fetch_games_list = function(){
 
         if(!localStorage.login_token){
-            return;
-        };
+            return;}
         $.ajax({
             url: "/api/games",
             method: "GET",
@@ -167,9 +169,8 @@ $(document).ready(function() {
     };
 
     var fetch_game = function(id){
-        var game_id = id;
         $.ajax({
-            url: "/api/games/" + game_id,
+            url: "/api/games/" + id,
             method: "GET",
 
             success: function(game_obj) {
@@ -177,28 +178,30 @@ $(document).ready(function() {
                 simulation.dimensions.x = game_obj.columns;
                 simulation.dimensions.y = game_obj.rows;
                 simulation.cells = {};
+                Data.reset();
 
                 $.each (game_obj.living_cells, function(cell_index, cell_obj) {
                     var cell_key = Helpers.get_cell_key(cell_obj.row, cell_obj.column);
                     simulation.cells[cell_key] = true;
+                    simulation.living_cells +=1;
                 });
 
                 update_cells(simulation);
+                Data.count();
 
                 $("#game-panel").show();
-                $("#game-name").html(game_obj.name);
+                $("#game-name").text(game_obj.name);
             }
         })
     };
 
     var delete_game = function(id){
-        var game_id = id;
         $.ajax({
-            url: "/api/games/" + game_id,
+            url: "/api/games/" + id,
             method: "DELETE",
             data: {
                 game: {
-                    "id": game_id
+                    "id": id
                 }
             },
             success: function(games_array) {
@@ -209,6 +212,7 @@ $(document).ready(function() {
 
     var add_game = function() {
         var game = new Game();
+        game.name = $("#game-title").val();
         $.ajax({
             url: "/api/games",
             method: "POST",
@@ -227,25 +231,62 @@ $(document).ready(function() {
     };
     var save_game = function(){
         var game = new Game();
-        var game_id = localStorage.last_game;
+        var id = localStorage.last_game;
         $("#saving-alert").show();
         $.ajax({
-            url: "/api/games/" + game_id,
+            url: "/api/games/" + id,
             method: "PUT",
             data: {
                 game: {
                     "rows": game.rows,
                     "columns": game.columns,
-                    "id": game_id
+                    "id": id
                 },
                 living_cells: game.living_cells
             },
             success: function(games_array) {
                 $("#saving-alert").hide();
-                Helpers.flash_alert_message('#saved-alert')
+                Helpers.flash_alert('#saved-alert')
             }
         })
-    }
+    };
+
+    var generation = 0;
+    var fps = 20;
+    var frameDuration = function(){
+        return parseInt(1000/fps);
+    };
+
+
+    var game_generation_el = $("#game-generation");
+    var game_cells_el = $("#game-cells");
+    var game_dimensions_el = $("#game-dimensions");
+    var game_fps_el = $("#game-speed");
+
+
+    var Data = {
+        count: function(){
+            game_cells_el.text(simulation.living_cells);
+        },
+        generation: function(){
+            generation += 1;
+            game_generation_el.text(generation);
+        },
+        dimensions: function(){
+            var dimensions_str = simulation.dimensions.y + "x" + simulation.dimensions.x;
+            game_dimensions_el.text(dimensions_str);
+        },
+        frames: function(){
+            game_fps_el.text(fps);
+        },
+        reset: function(){
+            simulation.living_cells = 0;
+            generation = 0;
+            this.count();
+            this.generation();
+        }
+
+    };
 
     //canvas stuff
 
@@ -268,12 +309,6 @@ $(document).ready(function() {
         var ch = (height / y);
         cs = (cw > ch)? ch : cw;
 
-        //calculate new canvas dimensions
-        var new_width = (cs * x);
-        var new_height = (cs * y);
-
-        //resize the canvas
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         //generate empty grid
@@ -281,14 +316,48 @@ $(document).ready(function() {
             for (var j=0;j<y;j++){
                 blank_cell(i, j);
             }
-        };
+        }
     };
+
+    var mouseDown = false;
+    var coords;
+    var mx, my;
+
     var update_cells = function(simulation){
         draw_canvas(simulation);
         $.each(simulation.cells, function(cell_key) {
             var coords = Helpers.get_coords(cell_key);
             paint_cell(coords[0], coords[1]);
         });
+    };
+
+    var add_cell = function (coords) {
+        var coord_id = Helpers.get_cell_key(coords[0], coords[1]);
+        if (simulation.cells[coord_id]) {
+            return;}
+        simulation.cells[coord_id] = true;
+        simulation.living_cells +=1;
+        paint_cell(coords[0], coords[1]);
+        Data.count();
+    };
+
+    var delete_cell = function(coords) {
+        var coord_id = Helpers.get_cell_key(coords[0], coords[1]);
+        delete simulation.cells[coord_id];
+        simulation.living_cells -=1;
+        blank_cell(coords[0], coords[1]);
+        Data.count();
+    };
+    var select_cell = function(coords){
+        var coord_id = Helpers.get_cell_key(coords[0], coords[1]);
+        var cell_data = simulation.cells[coord_id];
+        if(cell_data) {
+            delete_cell(coords);
+        }
+        else {
+            add_cell(coords);
+
+        }
     };
     var paint_cell = function(x, y){
         ctx.fillStyle = "white";
@@ -303,77 +372,83 @@ $(document).ready(function() {
         ctx.strokeRect(x*cs,y*cs,cs,cs);
     };
 
-    var mouseDown = false;
-    var coords, coord_id;
-    var mx, my;
-
     canvas.onmousedown = function(e){
         mouseDown = true;
 
-        //get click coordinates
+        var grid_width = (cs * simulation.dimensions.x);
+        var grid_height = (cs * simulation.dimensions.y);
+
         var clickedX = e.pageX - this.offsetLeft;
         var clickedY = e.pageY - this.offsetTop;
 
+        var is_valid = Helpers.in_bounds(clickedX, clickedY, grid_width, grid_height);
+
+        if (is_valid == false) {
+            return;
+        }
         //get cell coordinates
         coords = [Math.floor(clickedX/cs), Math.floor(clickedY/cs)];
-        coord_id = Helpers.get_cell_key(coords[0], coords[1]);
-
-        //update canvas state
-        var select_cells = function(){
-            var cell_data = simulation.cells[coord_id];
-            (cell_data) ? blank_cell(coords[0], coords[1]) : paint_cell(coords[0], coords[1]);
-            if(cell_data) {
-                delete simulation.cells[coord_id];
-            }
-            else {
-                simulation.cells[coord_id] = true;
-            };
-        };
-        select_cells();
+        select_cell(coords);
 
         canvas.onmousemove = function(e){
 
             //get updated mouse coordinates
             var getMouse = function(e) {
                 var element = canvas, offsetX = 0, offsetY = 0;
-
                 if (element.offsetParent) {
                     do {
                         offsetX += element.offsetLeft;
                         offsetY += element.offsetTop;
                     } while ((element = element.offsetParent));
-                };
+                }
                 mx = e.pageX - offsetX;
                 my = e.pageY - offsetY
             };
             getMouse(e);
 
             coords = [Math.floor(mx/cs), Math.floor(my/cs)];
-            coord_id = Helpers.get_cell_key(coords[0], coords[1]);
-            select_cells();
+            is_valid = Helpers.in_bounds(mx, my, grid_width, grid_height);
+            if (is_valid) {
+            add_cell(coords);
+            }
+
 
         }
     };
     canvas.onmouseup = function(){
         mouseDown = false;
         canvas.onmousemove = null;
-    }
+    };
+
+    var reset_grid = function(){
+        simulation.cells = {};
+        simulation.living_cells = 0;
+        update_cells(simulation);
+        Data.reset();
+    };
 
     var init = function(){
 
-        var fps = 30;
-        var frameDuration = parseInt(1000/fps);
         var idle = true;
 
         draw_canvas(simulation);
+        fetch_games_list();
+
+        Data.reset();
+        Data.dimensions();
+        Data.frames();
 
         var animate = function(){
+
             if(simulation){
                 simulation.step();
                 update_cells(simulation);
-                if (!idle){
-                    setTimeout(animate, frameDuration);
-                }
+                Data.count();
+                Data.generation();
+            }
+
+            if (!idle){
+                setTimeout(animate, frameDuration());
             }
         };
 
@@ -387,25 +462,26 @@ $(document).ready(function() {
         //handlers for navigation bar elements
 
         $("#run-link").click(function(){
-            idle = (idle)? false : true;
+            idle = (!idle);
             animate();
+            if (idle) {
+                $(this).html("run simulation")
+            }
+            else {
+                $(this).html("stop simulation")
+            }
         });
         $("#reset-link").click(function(){
-            simulation.cells = {};
-            update_cells(simulation);
+            reset_grid();
         });
 
         $("#logout-link").click(function(){
+            $("#game-panel").hide();
             localStorage.removeItem("login_token");
             set_logged_in(false);
-        });
+            reset_grid();
 
-        $("#ohmydays").click(function(){
-            fetch_game(109);
-            idle = false;
-            animate();
         });
-
 
         //handlers for buttons
 
@@ -437,27 +513,34 @@ $(document).ready(function() {
             var x = $("#columns").val();
             var y = $("#rows").val();
             simulation = new Simulation(x, y);
+            Data.reset();
+            Data.dimensions();
             update_cells(simulation);
+
         });
 
+        $("#fps-button").click(function(){
+            fps = $("#fps").val();
+            Data.frames();
+        });
 
         //handlers for game management elements
 
         $("#add-button").click(function(){
             add_game();
         });
-
         $("#update-link").click(function(){
             save_game();
         });
         $("#reload-link").click(function(){
-            var game_id = localStorage.last_game;
-            fetch_game(game_id);
+            fetch_game(localStorage.last_game);
         });
-
-    };
+        $("#close-link").click(function(){
+            $("#game-panel").hide();
+            reset_grid();
+        })
+        };
 
     setHeaders();
-    fetch_games_list();
     init();
 });
