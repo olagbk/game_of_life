@@ -459,8 +459,7 @@ $(document).ready(function() {
                 var thisLoop = new Date;
                 var fps = parseFloat(1000 / (thisLoop - lastLoop)).toFixed(2);
                 lastLoop = thisLoop;
-                Data.real_fps(fps);
-            }
+                Data.real_fps(fps);            }
 
             if (!idle){
                 setTimeout(animate, frameDuration());
