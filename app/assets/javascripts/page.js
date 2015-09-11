@@ -460,7 +460,6 @@ $(document).ready(function() {
                 var fps = parseFloat(1000 / (thisLoop - lastLoop)).toFixed(2);
                 lastLoop = thisLoop;
                 Data.real_fps(fps);
-
             }
 
             if (!idle){
