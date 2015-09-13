@@ -37,10 +37,8 @@ class Api::GamesController < ApplicationController
 
     update_cells();
 
-    @games = Game.where({:user_id=>get_user})
-
     respond_to do |format|
-      format.json { render :json => @games }
+      format.json { render :json => @game.to_json(:include => :living_cells) }
     end
 
 

@@ -222,8 +222,9 @@ $(document).ready(function() {
                 },
                 living_cells: game.living_cells
             },
-            success: function(games_array) {
-                render_games_list(games_array);
+            success: function(game_obj) {
+                fetch_game(game_obj.id);
+                fetch_games_list();
             }
         })
     };
@@ -244,7 +245,8 @@ $(document).ready(function() {
             },
             success: function(games_array) {
                 $("#saving-alert").hide();
-                Helpers.flash_alert('#saved-alert')
+                Helpers.flash_alert('#saved-alert');
+
             }
         })
     };
@@ -282,6 +284,7 @@ $(document).ready(function() {
             StatElements.real_fps.text("(" + fps + ")");
         },
         reset: function(){
+            StatElements.real_fps.text("");
             simulation.living_cells = 0;
             generation = 0;
             this.count();
